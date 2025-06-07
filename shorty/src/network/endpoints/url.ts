@@ -1,0 +1,1 @@
+export const SHORT_URL = "/url"

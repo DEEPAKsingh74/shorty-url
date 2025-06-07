@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthType {
+  google
+  credentials
+}
+
+enum DeviceType {
+  both
+  mobile
+  desktop
+}
+
+enum ExpireType {
+  clicks
+  time
+}
+
+enum ExpireUnit {
+  months
+  days
+  hours
+}
+
+enum AnalyticDeviceType {
+  mobile
+  desktop
+}
+
+enum OperatingSystemEnum {
+  mac_os
+  windows
+  other
+}
+
+enum BrowserEnum {
+  chrome
+  firefox
+  safari
+  edge
+  opera
+  other
+}
+
+enum PaymentStatus {
+  pending
+  success
+  failed
+  refunded
+  canceled
+}
+
+model User {
+  id              String   @id @default(uuid())
+  firstName       String?  @db.VarChar(100)
+  lastName        String?  @db.VarChar(100)
+  email           String   @unique @db.VarChar(100)
+  password        String?  @db.Text
+  isEmailVerified Boolean  @default(false)
+  authType        AuthType
+  location        String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+  otps          Otp[]
+  urls          Url[]
+  UserClicks    UserClicks[]
+  pricing       Pricing[]
+
+  Payment Payment[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String
+  expireAt  DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  code      String
+  expireAt  DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Url {
+  id          String     @id
+  code        String     @unique
+  originalUrl String
+  deviceType  DeviceType
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  isExpired   Boolean    @default(false)
+
+  expireType   ExpireType?
+  expireUnit   ExpireUnit?
+  expireClicks Int?
+  expireAt     DateTime?
+
+  isAnalytics Boolean @default(false)
+
+  userId       String?
+  user         User?                   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  restrictions UrlCountryRestriction[]
+  UserClicks   UserClicks[]
+}
+
+model Country {
+  code String @id
+  name String
+
+  restrictedUrls UrlCountryRestriction[]
+}
+
+model UrlCountryRestriction {
+  urlId       String
+  countryCode String
+
+  url     Url     @relation(fields: [urlId], references: [id], onDelete: Cascade)
+  country Country @relation(fields: [countryCode], references: [code], onDelete: Cascade)
+
+  @@id([urlId, countryCode])
+}
+
+model UserClicks {
+  id String @id @default(uuid())
+
+  ip      String? @db.Inet
+  country String  @db.VarChar(100)
+  city    String? @db.VarChar(100)
+
+  deviceType      AnalyticDeviceType
+  operatingSystem OperatingSystemEnum
+  browser         BrowserEnum
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  urlId String
+  url   Url    @relation(fields: [urlId], references: [id], onDelete: Cascade)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([urlId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([country])
+}
+
+model Pricing {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  totalUrls Int     @default(0) @map("total_urls")
+  isActive  Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("pricings")
+}
+
+model Payment {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  amount   Decimal       @db.Decimal(10, 2)
+  currency String        @default("INR")
+  status   PaymentStatus @default(pending)
+
+  transactionId String?  @unique @map("transaction_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("payments")
+}

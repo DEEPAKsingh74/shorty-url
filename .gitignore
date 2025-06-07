@@ -1,0 +1,51 @@
+# ==========================
+# Node.js (Frontend & Backend)
+# ==========================
+**/node_modules/
+**/logs/
+**/*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/.pnpm-debug.log*
+
+# ==========================
+# Environment & Secrets
+# ==========================
+**/.env*
+**/*.pem
+
+# ==========================
+# Next.js (shorty)
+# ==========================
+**/.next/
+**/out/
+**/build/
+**/coverage/
+**/next-env.d.ts
+**/*.tsbuildinfo
+**/.vercel/
+**/.DS_Store
+
+# ==========================
+# Yarn / PnP
+# ==========================
+**/.pnp
+**/.pnp.*
+**/.yarn/*
+!**/.yarn/patches
+!**/.yarn/plugins
+!**/.yarn/releases
+!**/.yarn/versions
+
+# ==========================
+# Prisma (shorty-backend-nodejs)
+# ==========================
+**/prisma/migrations/
+**/src/generated/
+
+# ==========================
+# Miscellaneous
+# ==========================
+.idea/
+idea.md

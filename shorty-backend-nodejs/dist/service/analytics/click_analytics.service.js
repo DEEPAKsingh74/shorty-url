@@ -1,0 +1,68 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getClickAnalytics = void 0;
+const prisma_1 = require("../../infrastructure/prisma/prisma");
+const date_fns_1 = require("date-fns");
+const getClickAnalytics = async (urlId, filters) => {
+    try {
+        // Step 1: Define date filter range if provided
+        let dateFilter = {};
+        if (filters?.month && filters?.year) {
+            const fromDate = (0, date_fns_1.startOfMonth)(new Date(filters.year, filters.month - 1));
+            const toDate = (0, date_fns_1.endOfMonth)(fromDate);
+            dateFilter = { gte: fromDate, lte: toDate };
+        }
+        // Step 2: Fetch analytics in parallel
+        const [totalClicks, uniqueClickRecords, clicksPerDay] = await Promise.all([
+            // Total Clicks
+            prisma_1.prisma.userClicks.count({
+                where: {
+                    urlId,
+                    createdAt: dateFilter,
+                },
+            }),
+            // Unique Clicks: fetch IPs and deduplicate manually
+            prisma_1.prisma.userClicks.findMany({
+                where: {
+                    urlId,
+                    createdAt: dateFilter,
+                },
+                select: {
+                    ip: true,
+                },
+            }),
+            // Count of clicks per day
+            prisma_1.prisma.userClicks.groupBy({
+                by: ["createdAt"],
+                _count: true,
+                where: {
+                    urlId,
+                    createdAt: dateFilter,
+                },
+                orderBy: {
+                    createdAt: "asc",
+                },
+            }),
+        ]);
+        // Step 3: Deduplicate IPs to get unique clicks
+        const uniqueClicks = new Set(uniqueClickRecords
+            .filter((record) => record.ip !== null)
+            .map((record) => record.ip)).size;
+        // Step 4: Format clicks per day as { "YYYY-MM-DD": count }
+        const formattedClicksPerDay = clicksPerDay.reduce((acc, row) => {
+            const dateKey = row.createdAt.toISOString().split("T")[0];
+            acc[dateKey] = (acc[dateKey] || 0) + row._count;
+            return acc;
+        }, {});
+        // Step 5: Return analytics data
+        return {
+            totalClicks,
+            uniqueClicks,
+            clicksPerDay: formattedClicksPerDay,
+        };
+    }
+    catch (error) {
+        throw error;
+    }
+};
+exports.getClickAnalytics = getClickAnalytics;

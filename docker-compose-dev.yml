@@ -1,0 +1,65 @@
+services:
+
+  # Postgres database = 
+  postgres-db:
+    image: postgres:17-alpine
+    container_name: postgres-db
+    ports:
+      - "5432:54532"
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - internal
+
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./shorty
+      dockerfile: Dockerfile.dev
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - internal
+
+
+
+# Backend Service
+  backend:
+    build:
+      context: ./shorty-backend-nodejs
+      dockerfile: Dockerfile.dev
+    container_name: backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - postgres-db
+    networks:
+      - internal
+
+
+
+
+# Volumes ---------->
+volumes:
+  postgres-data:
+
+
+
+# Networks ----------->
+networks:
+  internal:
+    driver: bridge
