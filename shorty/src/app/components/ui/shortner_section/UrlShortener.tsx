@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { FaLink, FaCopy, FaMobile, FaDesktop } from "react-icons/fa";
 import { FiExternalLink } from "react-icons/fi";
 import { DeviceTypeEnum, ExpiryTypeEnum, TimeUnitEnum } from "@/types";

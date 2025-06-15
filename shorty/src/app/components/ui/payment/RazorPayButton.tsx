@@ -17,7 +17,6 @@ interface RazorpayButtonProps {
 const RazorpayButton: React.FC<RazorpayButtonProps> = ({
   amount,
   description,
-  urlCount,
   className,
   onSuccess,
   onError,

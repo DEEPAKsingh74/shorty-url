@@ -15,16 +15,21 @@ export const useSignup = () => {
         error,
         reset,
     } = useApiMutation<SignupResponse, SignupData>({
-        getRequestConfig: () => ({
+
+        getRequestConfig: (payload) => ({
             url: SIGNUP,
             method: 'post',
+            data: payload,
+            headers: {
+                'Content-Type': 'application/json',
+            },
         }),
         options: {
             onSuccess: () => {
                 toast.success("registered successfully")
             },
             onError: (error: AxiosError) => {
-                
+
                 toast.error((error.response?.data as ErrorResponse).error.message);
             },
         },

@@ -5,6 +5,7 @@ import { recordClickAnalytics } from "@/service/url/record.analytics.service";
 import { NotFoundError } from "@/utils/error_handler/ErrorStatus";
 import { getClientIp } from "@/utils/helpers/getClientIp";
 import { getCountryCodeFromIP } from "@/utils/helpers/getCountryCodeFromIp";
+import { getDeviceType } from "@/utils/helpers/getDeviceType";
 import { NextFunction, Request, Response } from "express";
 
 export const getUrlController = async (req: Request, res: Response, next: NextFunction) => {
@@ -26,9 +27,12 @@ export const getUrlController = async (req: Request, res: Response, next: NextFu
 
         if (!urlResponse) throw new NotFoundError();
 
-        // check if the url is expired
-        const isExpired = isUrlExpired(urlResponse);
+        const deviceType = getDeviceType(req.headers['user-agent']);
 
+        // check if the url is expired
+        const isExpired = await isUrlExpired(urlResponse, countryCode, deviceType);
+        console.log("Is url expired:", isExpired);
+        
         if (isExpired) throw new NotFoundError();
 
         console.log(" is analytics: ", urlResponse.is_analytics);

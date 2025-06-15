@@ -12,9 +12,14 @@ export const useSubmitUrl = () => {
         error,
         reset,
     } = useApiMutation<ShortUrlResponse, ShortUrlData>({
-        getRequestConfig: () => ({
+
+        getRequestConfig: (payload) => ({
             url: SHORT_URL,
             method: 'post',
+            data: payload,
+            headers: {
+                'Content-Type': 'application/json',
+            },
         }),
         options: {
             onSuccess: (data) => {

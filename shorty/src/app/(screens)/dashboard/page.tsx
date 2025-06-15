@@ -22,7 +22,7 @@ const DashboardAnalytics = ({ searchParams }: DashboardAnalyticsProps) => {
     enabled: Boolean(id),
   });
 
-  const { deleteUrl, isPending } = useDeleteUrl();
+  const { deleteUrl } = useDeleteUrl();
 
   if (!id) {
     return (

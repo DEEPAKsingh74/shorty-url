@@ -22,6 +22,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/package.json ./package.json
 
+RUN npx prisma generate
+
 EXPOSE 8000
 
 CMD ["node", "dist/server.js"]

@@ -15,9 +15,13 @@ export const useLogin = () => {
         error,
         reset,
     } = useApiMutation<LoginResponse, LoginData>({
-        getRequestConfig: () => ({
+        getRequestConfig: (payload) => ({
             url: LOGIN,
             method: 'post',
+            data: payload,
+            headers: {
+                'Content-Type': 'application/json',
+            },
         }),
         options: {
             onSuccess: () => {

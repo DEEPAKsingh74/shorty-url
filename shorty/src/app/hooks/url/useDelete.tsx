@@ -1,4 +1,3 @@
-import { LoginResponse } from "@/types/auth";
 import { useApiMutation } from "../network/useApiMutation";
 import toast from "react-hot-toast";
 import { ErrorResponse } from "@/types/error_response";
@@ -14,9 +13,13 @@ export const useDeleteUrl = () => {
         error,
         reset,
     } = useApiMutation<void, string>({
+
         getRequestConfig: (id) => ({
             url: `/url/${id}`,
             method: 'delete',
+            headers: {
+                'Content-Type': 'application/json',
+            },
         }),
         options: {
             onSuccess: () => {
